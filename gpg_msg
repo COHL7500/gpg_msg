@@ -1,5 +1,11 @@
 #!/bin/bash
 
+key_lookup() {
+    if ! gpg --list-keys "$1" > /dev/null/ 2>&1; then
+        echo "Recipient key not found! Remember to import first."
+    fi
+}
+
 show_help() {
     echo "It is recommended to make the script an alias!"
     echo "Usage: $0 {encrypt|decrypt} <arguments>"
@@ -12,7 +18,9 @@ show_help() {
 file_encrypt() {
     local recipient="$1"
     local file_input="$2"
-    local file_output="${file_input}.gpg"
+    local file_output="${file_input}.asc"
+
+    key_lookup "$recipient"
 
     gpg --output "$file_output" \
         --encrypt --sign --armor \
