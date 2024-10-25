@@ -1,0 +1,43 @@
+#!/bin/bash
+
+file_encrypt() {
+    local recipient="$1"
+    local file_input="$2"
+    local file_output="${file_input}.gpg"
+
+    gpg --output "$file_output" \
+        --encrypt --sign \
+        --recipient "$recipient" "$file_input"
+
+    echo "'$file_input' encrypted and signed as '$file_output' to '$recipient'."
+}
+
+file_decrypt() {
+    local file_encrypted="$1"
+    local file_output="${file_encrypted}.decrypted"
+
+    gpg --output "$file_output" \
+        --decrypt "$file_encrypted"
+
+    echo "'$file_encrypted' decrypted as '$file_output'."
+}
+
+case "$1" in
+    encrypt)
+        if [[ -n "$2" && -n "$3" ]]; then
+            file_encrypt "$2" "$3"
+        else
+            echo "Usage: $0 encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT>"
+        fi
+        ;;
+    decrypt)
+        if [[ -n "$2" ]]; then
+            file_decrypt "$2"
+        else
+            echo "Usage: $0 decrypt <FILE_TO_DECRYPT>"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {encrypt|decrypt} <ARGUMENTS>"
+        ;;
+esac
