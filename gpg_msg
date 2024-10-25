@@ -12,6 +12,8 @@ show_help() {
     echo "Options:"
     echo "   encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT> Encrypt + sign to a recipient"
     echo "   decrypt <FILE_TO_DECRYPT>                   Decrypt a given file"
+    echo "   pb_encrypt <RECIPIENT_EMAIL>                Encrypt clipboard contents"
+    echo "   pb_decrypt                                  Decrypt clipboard contents"
     echo "   -h, --help                                  Display this help message"
 }
 
@@ -39,6 +41,17 @@ file_decrypt() {
     echo "'$file_encrypted' decrypted as '$file_output'."
 }
 
+clipboard_encrypt() {
+    local recipient="$1"
+    pbpaste | gpg --armor --encrypt --recipient "$recipient" | pbcopy
+    echo "successfully encrypted text copied from clipboard!"
+}
+
+clipboard_decrypt() {
+    pbpaste | gpg --decrypt | pbcopy
+    echo "successfully decrypted text copied from clipboard!"
+}
+
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
     show_help
     exit 0
@@ -58,6 +71,16 @@ case "$1" in
         else
             echo "Usage: $0 decrypt <FILE_TO_DECRYPT>"
         fi
+        ;;
+    pb_encrypt)
+        if [[ -n "$2" ]]; then
+            clipboard_encrypt "$2"
+        else
+            echo "Usage: copy to clipboard, then $0 pb_encrypt <RECIPIENT_EMAIL>"
+        fi
+        ;;
+    pb_decrypt)
+        clipboard_decrypt
         ;;
     *)
         echo "Invalid option: $1"

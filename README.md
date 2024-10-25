@@ -11,7 +11,17 @@ Although there is no real setup (besides sharing each other's public keys), it i
 3. Done!
 
 ## To encrypt and sign
+
+for a file:
 ```gpgmsg encrypt <RECIPIENT> <FILE_TO_ENCRYPT>```
 
+for clipboard:
+```gpgmsg pb_encrypt <RECIPIENT>```
+
 ## To decrypt
+
+for a file: 
 ```gpgmsg decrypt <FILE_TO_DECRYPT>```
+
+for clipboard:
+```gpgmsg pb_decrypt```
