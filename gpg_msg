@@ -15,7 +15,7 @@ file_encrypt() {
     local file_output="${file_input}.gpg"
 
     gpg --output "$file_output" \
-        --encrypt --sign \
+        --encrypt --sign --armor \
         --recipient "$recipient" "$file_input"
 
     echo "'$file_input' encrypted and signed as '$file_output' to '$recipient'."
