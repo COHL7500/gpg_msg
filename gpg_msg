@@ -1,5 +1,14 @@
 #!/bin/bash
 
+show_help() {
+    echo "It is recommended to make the script an alias!"
+    echo "Usage: $0 {encrypt|decrypt} <arguments>"
+    echo "Options:"
+    echo "   encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT> Encrypt + sign to a recipient"
+    echo "   decrypt <FILE_TO_DECRYPT>                   Decrypt a given file"
+    echo "   -h, --help                                  Display this help message"
+}
+
 file_encrypt() {
     local recipient="$1"
     local file_input="$2"
@@ -22,6 +31,11 @@ file_decrypt() {
     echo "'$file_encrypted' decrypted as '$file_output'."
 }
 
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    show_help
+    exit 0
+fi
+
 case "$1" in
     encrypt)
         if [[ -n "$2" && -n "$3" ]]; then
@@ -38,6 +52,7 @@ case "$1" in
         fi
         ;;
     *)
-        echo "Usage: $0 {encrypt|decrypt} <ARGUMENTS>"
+        echo "Invalid option: $1"
+        show_help
         ;;
 esac
