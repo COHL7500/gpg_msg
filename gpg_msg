@@ -1,7 +1,13 @@
 #!/bin/bash
 
+delete_original_file=false
+
+if [[ "$2" == "--rm-orig" || "$3" == "--rm-orig" || "$4" == "--rm-orig" ]]; then
+    delete_original_file=true
+fi
+
 key_lookup() {
-    if ! gpg --list-keys "$1" > /dev/null/ 2>&1; then
+    if ! gpg --list-keys "$1" > /dev/null 2>&1; then
         echo "Recipient key not found! Remember to import first."
     fi
 }
@@ -10,11 +16,11 @@ show_help() {
     echo "It is recommended to make the script an alias!"
     echo "Usage: $0 {encrypt|decrypt} <arguments>"
     echo "Options:"
-    echo "   encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT> Encrypt + sign to a recipient"
-    echo "   decrypt <FILE_TO_DECRYPT>                   Decrypt a given file"
-    echo "   pb_encrypt <RECIPIENT_EMAIL>                Encrypt clipboard contents"
-    echo "   pb_decrypt                                  Decrypt clipboard contents"
-    echo "   -h, --help                                  Display this help message"
+    echo "   encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT>    Encrypt + sign to a recipient"
+    echo "   decrypt <FILE_TO_DECRYPT>                      Decrypt a given file"
+    echo "   pb_encrypt <RECIPIENT_EMAIL>                   Encrypt clipboard contents"
+    echo "   pb_decrypt                                     Decrypt clipboard contents"
+    echo "   -h, --help                                     Display this help message"
 }
 
 file_encrypt() {
@@ -28,7 +34,12 @@ file_encrypt() {
         --encrypt --sign --armor \
         --recipient "$recipient" "$file_input"
 
-    echo "'$file_input' encrypted and signed as '$file_output' to '$recipient'."
+    echo "'$file_input' encrypted and signed as '$file_output' to '$recipient.'"
+
+    if $delete_original_file; then
+        rm "$file_input"
+        echo "Original file '$file_input' deleted."
+    fi
 }
 
 file_decrypt() {
@@ -38,7 +49,12 @@ file_decrypt() {
     gpg --output "$file_output" \
         --decrypt "$file_encrypted"
 
-    echo "'$file_encrypted' decrypted as '$file_output'."
+    echo "'$file_encrypted' decrypted as '$file_output.'"
+
+    if $delete_original_file; then
+        rm "$file_encrypted"
+        echo "Original encrypted file '$file_encrypted' deleted."
+    fi
 }
 
 clipboard_encrypt() {
@@ -60,16 +76,16 @@ fi
 case "$1" in
     encrypt)
         if [[ -n "$2" && -n "$3" ]]; then
-            file_encrypt "$2" "$3"
+            file_encrypt "$2" "$3" "$delete_original_file"
         else
-            echo "Usage: $0 encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT>"
+            echo "Usage: $0 encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT> [--rm-orig]"
         fi
         ;;
     decrypt)
         if [[ -n "$2" ]]; then
-            file_decrypt "$2"
+            file_decrypt "$2" "$delete_original_file"
         else
-            echo "Usage: $0 decrypt <FILE_TO_DECRYPT>"
+            echo "Usage: $0 decrypt <FILE_TO_DECRYPT> [--rm-orig]"
         fi
         ;;
     pb_encrypt)
