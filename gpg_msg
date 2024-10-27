@@ -9,11 +9,18 @@ case "$OSTYPE" in
                 exit 1     ;;
 esac 
 
+# flag for deleting original file upon encryption/decryption.
 delete_original_file=false
 
 if [[ "$2" == "--rm-orig" || "$3" == "--rm-orig" || "$4" == "--rm-orig" ]]; then
     delete_original_file=true
 fi
+
+sign_data=true
+
+if [[ "$2" == "--no-sign" || "$3" = "--no-sign" || "$4" == "--no-sign" ]]; then
+    sign_data=false
+fi 
 
 key_lookup() {
     if ! gpg --list-keys "$1" > /dev/null 2>&1; then
@@ -29,6 +36,8 @@ show_help() {
     echo "   decrypt <FILE_TO_DECRYPT>                      Decrypt a given file"
     echo "   pb_encrypt <RECIPIENT_EMAIL>                   Encrypt clipboard contents"
     echo "   pb_decrypt                                     Decrypt clipboard contents"
+    echo "   --rm-orig                                      Remove original file upon encrypt/decrypt"
+    echo "   --no-sign                                      Omits signature upon encryption"
     echo "   -h, --help                                     Display this help message"
 }
 
@@ -39,15 +48,18 @@ file_encrypt() {
 
     key_lookup "$recipient"
 
-    gpg --output "$file_output" \
-        --encrypt --sign --armor \
-        --recipient "$recipient" "$file_input"
-
-    echo "'$file_input' encrypted and signed as '$file_output' to '$recipient.'"
+    if $sign_data; then
+        gpg --output "$file_output" \
+            --encrypt --sign --armor \
+            --recipient "$recipient" "$file_input"
+    else
+        gpg --output "$file_output" \
+            --encrypt --armor \
+            --recipient "$recipient" "$file_input"
+    fi
 
     if $delete_original_file; then
         rm "$file_input"
-        echo "Original file '$file_input' deleted."
     fi
 }
 
@@ -71,12 +83,20 @@ clipboard_encrypt() {
     local recipient="$1"
 
     if [[ "$OS" == "Mac" ]]; then
-        pbpaste | gpg --armor --encrypt --recipient "$recipient" | pbcopy
-    elif [[ "$OS" == "Linux" ]] then
-        xclip -o | gpg --armor --encrypt --recipient "$recipient" | xclip -selection clipboard
+        if $sign_data; then 
+            pbpaste | gpg --armor --encrypt --sign --recipient "$recipient" | pbcopy
+        else
+            pbpaste | gpg --armor --encrypt --recipient "$recipient" | pbcopy
     fi
+            
 
-    echo "successfully encrypted text copied from clipboard!"
+    elif [[ "$OS" == "Linux" ]] then 
+        if $sign_data; then
+            xclip -o | gpg --armor --encrypt --sign --recipient "$recipient" | xclip -selection clipboard
+        else 
+            xclip -o | gpg --armor --encrypt --recipient "$recipient" | xclip -selection clipboard
+        fi
+    fi
 }
 
 clipboard_decrypt() {
