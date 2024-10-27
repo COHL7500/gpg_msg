@@ -1,5 +1,14 @@
 #!/bin/bash
 
+OS=""
+
+case "$OSTYPE" in
+    linux-gnu*) OS="Linux" ;;
+    darwin*)    OS="Mac"   ;;
+    *)          echo "OS not supported: $OSTYPE"
+                exit 1     ;;
+esac 
+
 delete_original_file=false
 
 if [[ "$2" == "--rm-orig" || "$3" == "--rm-orig" || "$4" == "--rm-orig" ]]; then
@@ -57,14 +66,27 @@ file_decrypt() {
     fi
 }
 
+
 clipboard_encrypt() {
     local recipient="$1"
-    pbpaste | gpg --armor --encrypt --recipient "$recipient" | pbcopy
+
+    if [[ "$OS" == "Mac" ]]; then
+        pbpaste | gpg --armor --encrypt --recipient "$recipient" | pbcopy
+    elif [[ "$OS" == "Linux" ]] then
+        xclip -o | gpg --armor --encrypt --recipient "$recipient" | xclip -selection clipboard
+    fi
+
     echo "successfully encrypted text copied from clipboard!"
 }
 
 clipboard_decrypt() {
-    pbpaste | gpg --decrypt | pbcopy
+
+    if [[ "$OS" == "Mac" ]]; then
+        pbpaste | gpg --decrypt | pbcopy
+    elif [[ "$OS" == "Linux" ]] then
+        xclip -o | gpg --decrypt | xclip -selection clipboard
+    fi 
+    
     echo "successfully decrypted text copied from clipboard!"
 }
 
