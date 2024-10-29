@@ -24,7 +24,13 @@ fi
 
 key_lookup() {
     if ! gpg --list-keys "$1" > /dev/null 2>&1; then
-        echo "Recipient key not found! Remember to import first."
+        echo "Recipient key not found! Attempting to fetch from key server..."
+        gpg --keyserver https://keyserver.ubuntu.com/ --recv-keys "$1" || {
+            echo "ERROR: Key for '$1' could not be fetched. Ensure key exists or import manually."
+            echo "A key can be uploaded to a key server as such:"
+            echo "gpg --send-keys <Key ID>"
+            exit 1
+        }
     fi
 }
 
@@ -32,13 +38,13 @@ show_help() {
     echo "It is recommended to make the script an alias!"
     echo "Usage: $0 {encrypt|decrypt} <arguments>"
     echo "Options:"
-    echo "   encrypt <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT>    Encrypt + sign to a recipient"
-    echo "   decrypt <FILE_TO_DECRYPT>                      Decrypt a given file"
-    echo "   pb_encrypt <RECIPIENT_EMAIL>                   Encrypt clipboard contents"
-    echo "   pb_decrypt                                     Decrypt clipboard contents"
-    echo "   --rm-orig                                      Remove original file upon encrypt/decrypt"
-    echo "   --no-sign                                      Omits signature upon encryption"
-    echo "   -h, --help                                     Display this help message"
+    echo "   encrypt    <RECIPIENT_EMAIL> <FILE_TO_ENCRYPT>    Encrypt + sign to a recipient"
+    echo "   decrypt    <FILE_TO_DECRYPT>                      Decrypt a given file"
+    echo "   pb_encrypt <RECIPIENT_EMAIL>                      Encrypt clipboard contents"
+    echo "   pb_decrypt                                        Decrypt clipboard contents"
+    echo "   --rm-orig                                         Remove original file upon encrypt/decrypt"
+    echo "   --no-sign                                         Omits signature upon encryption"
+    echo "   -h, --help                                        Display this help message"
 }
 
 file_encrypt() {
@@ -70,9 +76,9 @@ file_decrypt() {
     gpg --output "$file_output" \
         --decrypt "$file_encrypted"
 
-    echo "'$file_encrypted' decrypted as '$file_output.'"
+     echo "'$file_encrypted' decrypted as '$file_output.'"
 
-    if $delete_original_file; then
+     if $delete_original_file; then
         rm "$file_encrypted"
         echo "Original encrypted file '$file_encrypted' deleted."
     fi
