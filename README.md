@@ -1,9 +1,12 @@
 # gpg_msg
 **A simple facade for encryption + signing/decryption data to a recipient with extra nifty utilities. Ideal for the workplace!**
 
-I actively encrypt/decrypt files with GPG at work, though always forget the commands for the process. Thus, I made this simple _gpg_msg_ bash script:
+<ins>*This script has ONLY been tested and developed for Mac/Linux.*</ins>  
 
-## Setup (Recommended) (For Mac/Linux)
+I actively encrypt/decrypt files with GPG at work, though always forget the commands for the process.Thus, I made this very simple _gpg_msg_ bash script.
+...Emphasis on the simple part: Features such as batch encryption, specific compression techniques etc. are omitted here. In this case, refer to the [gpg documentation](https://www.gnupg.org/documentation/manuals/gnupg24/gpg.1.html). 
+
+## Setup (Recommended)
 Although there is no real setup (besides sharing each other's public keys), it is recommended to set it up as an alias in your zsh/bash configuration file:
 
 1. Move the script to your bin folder: ```sudo mv gpg_msg.sh /usr/local/bin/gpg_msg```
