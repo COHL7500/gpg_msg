@@ -15,6 +15,10 @@ Although there is no real setup (besides sharing each other's public keys), it i
 2. Add an alias (can be anything, but I named it "gpgmsg": ```echo 'alias gpgmsg="gpg_msg"' >> ~/.zshrc```
 3. Done!
 
+If you have not created a keypair yet, either do it from the commandline or use [GPG Suite](https://gpgtools.org/) for simplicity.
+
+
+
 ## To encrypt and sign
 
 for a file:
